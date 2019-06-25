@@ -6,7 +6,6 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.szeastroc.common.constant.CookieConstant;
 import com.szeastroc.common.constant.RedisConstant;
-import com.szeastroc.common.utils.CookieUtil;
 import com.szeastroc.common.vo.CommonResponse;
 import com.szeastroc.commondb.config.redis.JedisClient;
 import com.szeastroc.user.client.FeignCacheClient;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,15 +67,13 @@ public class TokenFilter extends ZuulFilter {
         RequestContext requestContext = RequestContext.getCurrentContext();
         HttpServletRequest request = requestContext.getRequest();
 
-        Cookie cookie = CookieUtil.get(request, CookieConstant.MANAGE_TOKEN);
+        String token = request.getHeader(CookieConstant.MANAGE_TOKEN);
 
         /**
          * 验证cookie中token是否存在
          */
-        if(cookie != null
-                && StringUtils.isNotBlank(cookie.getValue()) ){
+        if(StringUtils.isNotBlank(token)){
 
-            String token = cookie.getValue();
             String json = jedisClient.get(String.format(RedisConstant.MANAGE_TOKEN_TEMPLATE, token));
 
             /**

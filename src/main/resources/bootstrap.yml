@@ -15,7 +15,8 @@ eureka:
     service-url:
 #      defaultZone: http://eureka:8761/eureka
 #      defaultZone: http://10.136.15.114:8761/eureka
-      defaultZone: http://10.136.15.211:8761/eureka
+#      defaultZone: http://10.136.15.211:8761/eureka
+      defaultZone: http://10.136.15.135:8761/eureka
   instance:
     prefer-ip-address: true
 management:
