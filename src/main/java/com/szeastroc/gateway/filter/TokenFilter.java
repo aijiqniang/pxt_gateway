@@ -10,7 +10,7 @@ import com.szeastroc.common.vo.CommonResponse;
 import com.szeastroc.commondb.config.redis.JedisClient;
 import com.szeastroc.user.client.FeignCacheClient;
 import com.szeastroc.user.common.session.UserManageVo;
-import com.szeastroc.user.common.vo.MenuInfoVo;
+import com.szeastroc.user.common.vo.SessionMenuInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +51,9 @@ public class TokenFilter extends ZuulFilter {
         RequestContext requestContext = RequestContext.getCurrentContext();
         HttpServletRequest request = requestContext.getRequest();
 
-        CommonResponse<List<MenuInfoVo>> listForMenumInfoVo = feignCacheClient.getListForMenumInfoVo();
-        List<MenuInfoVo> menuInfoVos = listForMenumInfoVo.getData();
-        List<String> pageUrls = menuInfoVos.stream().map(MenuInfoVo::getPageUrl).collect(Collectors.toList());
+        CommonResponse<List<SessionMenuInfoVo>> listForMenumInfoVo = feignCacheClient.getListForMenumInfoVo();
+        List<SessionMenuInfoVo> menuInfoVos = listForMenumInfoVo.getData();
+        List<String> pageUrls = menuInfoVos.stream().map(SessionMenuInfoVo::getPageUrl).collect(Collectors.toList());
 
         log.info("路径 -> [{}]", request.getRequestURI());
         if(CollectionUtil.isNotEmpty(pageUrls) && pageUrls.contains(request.getRequestURI())){
@@ -86,10 +86,10 @@ public class TokenFilter extends ZuulFilter {
                 /**
                  * 验证所含菜单是否有当前请求所需资源
                  */
-                if(userManageVo != null && CollectionUtil.isNotEmpty(userManageVo.getMenuInfoVos())){
+                if(userManageVo != null && CollectionUtil.isNotEmpty(userManageVo.getSessionMenuInfoVos())){
 
-                    List<MenuInfoVo> menuInfoVos = userManageVo.getMenuInfoVos();
-                    List<String> pageUrls = menuInfoVos.stream().map(MenuInfoVo::getPageUrl).collect(Collectors.toList());
+                    List<SessionMenuInfoVo> menuInfoVos = userManageVo.getSessionMenuInfoVos();
+                    List<String> pageUrls = menuInfoVos.stream().map(SessionMenuInfoVo::getPageUrl).collect(Collectors.toList());
 
                     if(pageUrls.contains(request.getRequestURI())){
                         return null;
