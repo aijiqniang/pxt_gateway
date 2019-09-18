@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.szeastroc</groupId>
             <artifactId>pxt-common</artifactId>
-            <version>0.2.4</version>
+            <version>0.2.7</version>
         </dependency>
 
         <dependency>
