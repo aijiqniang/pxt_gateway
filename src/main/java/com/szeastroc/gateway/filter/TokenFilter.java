@@ -1,4 +1,5 @@
-package com.szeastroc.gateway.filter;//package com.imooc.apigateway.filter;
+package com.szeastroc.gateway.filter;
+//package com.imooc.apigateway.filter;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
@@ -10,6 +11,7 @@ import com.szeastroc.common.vo.CommonResponse;
 import com.szeastroc.commondb.config.redis.JedisClient;
 import com.szeastroc.user.client.FeignCacheClient;
 import com.szeastroc.user.common.session.UserManageVo;
+import com.szeastroc.user.common.vo.MenuInfoVo;
 import com.szeastroc.user.common.vo.SessionMenuInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -18,7 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
@@ -48,15 +51,23 @@ public class TokenFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
+        String key = "pxt_cloud_new_cache_menuinfo_gateway";
         RequestContext requestContext = RequestContext.getCurrentContext();
         HttpServletRequest request = requestContext.getRequest();
-
-        CommonResponse<List<SessionMenuInfoVo>> listForMenumInfoVo = feignCacheClient.getListForMenumInfoVo();
-        List<SessionMenuInfoVo> menuInfoVos = listForMenumInfoVo.getData();
-        List<String> pageUrls = menuInfoVos.stream().map(SessionMenuInfoVo::getPageUrl).collect(Collectors.toList());
-
-        log.info("路径 -> [{}]", request.getRequestURI());
-        if(CollectionUtil.isNotEmpty(pageUrls) && pageUrls.contains(request.getRequestURI())){
+        String json = jedisClient.get(key);
+        List<MenuInfoVo> list = new ArrayList<>();
+        List<String> pageUrls = new ArrayList<>();
+        if (StringUtils.isNotBlank(json)) {
+            pageUrls = JSON.parseArray(json, String.class);
+        } else {
+            jedisClient.del(key);
+            CommonResponse<List<SessionMenuInfoVo>> listForMenumInfoVo = feignCacheClient.getListForMenumInfoVo();
+            List<SessionMenuInfoVo> menuInfoVos = listForMenumInfoVo.getData();
+            pageUrls = menuInfoVos.stream().map(SessionMenuInfoVo::getPageUrl).collect(Collectors.toList());
+            jedisClient.set(key, JSON.toJSONString(pageUrls), 120, TimeUnit.SECONDS);
+        }
+        //log.info("路径 -> [{}]", request.getRequestURI());
+        if (CollectionUtil.isNotEmpty(pageUrls) && pageUrls.contains(request.getRequestURI())) {
             return true;
         }
         return false;
@@ -72,26 +83,26 @@ public class TokenFilter extends ZuulFilter {
         /**
          * 验证cookie中token是否存在
          */
-        if(StringUtils.isNotBlank(token)){
+        if (StringUtils.isNotBlank(token)) {
 
             String json = jedisClient.get(String.format(RedisConstant.MANAGE_TOKEN_TEMPLATE, token));
 
             /**
              * 验证token是否有对应redis的值
              */
-            if(StringUtils.isNotBlank(json)){
+            if (StringUtils.isNotBlank(json)) {
                 UserManageVo userManageVo = JSON.parseObject(json, UserManageVo.class);
 
                 log.info("数据UserManageVo -> [{}]", JSON.toJSON(userManageVo));
                 /**
                  * 验证所含菜单是否有当前请求所需资源
                  */
-                if(userManageVo != null && CollectionUtil.isNotEmpty(userManageVo.getSessionMenuInfoVos())){
+                if (userManageVo != null && CollectionUtil.isNotEmpty(userManageVo.getSessionMenuInfoVos())) {
 
                     List<SessionMenuInfoVo> menuInfoVos = userManageVo.getSessionMenuInfoVos();
                     List<String> pageUrls = menuInfoVos.stream().map(SessionMenuInfoVo::getPageUrl).collect(Collectors.toList());
 
-                    if(pageUrls.contains(request.getRequestURI())){
+                    if (pageUrls.contains(request.getRequestURI())) {
                         return null;
                     }
                 }
