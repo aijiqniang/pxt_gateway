@@ -11,7 +11,6 @@ import com.szeastroc.common.vo.CommonResponse;
 import com.szeastroc.commondb.config.redis.JedisClient;
 import com.szeastroc.user.client.FeignCacheClient;
 import com.szeastroc.user.common.session.UserManageVo;
-import com.szeastroc.user.common.vo.MenuInfoVo;
 import com.szeastroc.user.common.vo.SessionMenuInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -55,7 +54,6 @@ public class TokenFilter extends ZuulFilter {
         RequestContext requestContext = RequestContext.getCurrentContext();
         HttpServletRequest request = requestContext.getRequest();
         String json = jedisClient.get(key);
-        List<MenuInfoVo> list = new ArrayList<>();
         List<String> pageUrls = new ArrayList<>();
         if (StringUtils.isNotBlank(json)) {
             pageUrls = JSON.parseArray(json, String.class);
@@ -66,7 +64,6 @@ public class TokenFilter extends ZuulFilter {
             pageUrls = menuInfoVos.stream().map(SessionMenuInfoVo::getPageUrl).collect(Collectors.toList());
             jedisClient.set(key, JSON.toJSONString(pageUrls), 300, TimeUnit.SECONDS);
         }
-        //log.info("路径 -> [{}]", request.getRequestURI());
         if (CollectionUtil.isNotEmpty(pageUrls) && pageUrls.contains(request.getRequestURI())) {
             return true;
         }
