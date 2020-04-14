@@ -11,7 +11,6 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 /**
  * 限流
  */
-@Component
 public class RateLimitFilter extends ZuulFilter{
 
 	private static final RateLimiter RATE_LIMITER = RateLimiter.create(100);
@@ -57,9 +56,9 @@ public class RateLimitFilter extends ZuulFilter{
 	 */
 	@Override
 	public Object run() {
-		if (!RATE_LIMITER.tryAcquire()) {
-			throw new RateLimitException();
-		}
+//		if (!RATE_LIMITER.tryAcquire()) {
+//			throw new RateLimitException();
+//		}
 
 		return null;
 	}
