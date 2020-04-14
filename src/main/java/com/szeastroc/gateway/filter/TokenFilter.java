@@ -64,7 +64,7 @@ public class TokenFilter extends ZuulFilter {
             CommonResponse<List<SessionMenuInfoVo>> listForMenumInfoVo = feignCacheClient.getListForMenumInfoVo();
             List<SessionMenuInfoVo> menuInfoVos = listForMenumInfoVo.getData();
             pageUrls = menuInfoVos.stream().map(SessionMenuInfoVo::getPageUrl).collect(Collectors.toList());
-            jedisClient.set(key, JSON.toJSONString(pageUrls), 120, TimeUnit.SECONDS);
+            jedisClient.set(key, JSON.toJSONString(pageUrls), 300, TimeUnit.SECONDS);
         }
         //log.info("路径 -> [{}]", request.getRequestURI());
         if (CollectionUtil.isNotEmpty(pageUrls) && pageUrls.contains(request.getRequestURI())) {
