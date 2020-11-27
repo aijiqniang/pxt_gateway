@@ -1,17 +1,15 @@
 package com.szeastroc.gateway.filter;
-//package com.imooc.apigateway.filter;
-
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.szeastroc.common.constant.CookieConstant;
 import com.szeastroc.common.constant.RedisConstant;
+import com.szeastroc.common.entity.user.session.UserManageVo;
+import com.szeastroc.common.entity.user.vo.SessionMenuInfoVo;
+import com.szeastroc.common.feign.user.FeignCacheClient;
 import com.szeastroc.common.vo.CommonResponse;
 import com.szeastroc.commondb.config.redis.JedisClient;
-import com.szeastroc.user.client.FeignCacheClient;
-import com.szeastroc.user.common.session.UserManageVo;
-import com.szeastroc.user.common.vo.SessionMenuInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
