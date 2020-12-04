@@ -73,8 +73,9 @@
 
         <dependency>
             <groupId>com.szeastroc</groupId>
-            <artifactId>user-client</artifactId>
-            <version>0.2.0</version>
+            <artifactId>common-feign</artifactId>
+            <version>0.0.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
